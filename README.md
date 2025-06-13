@@ -12,7 +12,7 @@ El objetivo es realizar una simulación mesoscópica con el objetivo de servir p
 Se compone de 7 módulos:
 
 - map
-- server
+- [server](./server/)
 - route
 - count
 - light
