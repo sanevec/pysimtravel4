@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Draw Features</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/node_modules/ol/ol.css">
+    <style>
+      .map {
+        width: 100%;
+        height: calc(100vh - 50px);
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "ol/": "/node_modules/ol/",
+          "rbush":    "/node_modules/rbush/index.js",
+          "rbush/":   "/node_modules/rbush/",
+          "quickselect": "/node_modules/quickselect/index.js",
+          "quickselect/":"/node_modules/quickselect/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    <div class="row p-2">
+      <div class="col-auto">
+        <div class="input-group">
+          <label class="input-group-text" for="accion">Acción:</label>
+          <select class="form-select" id="accion">
+            <option value="Desplazar">Desplazar</option>
+            <option value="Consultar">Consultar</option>
+            <option value="Punto">Punto</option>
+            <option value="Línea">Línea</option>
+            <option value="Borrar">Borrar</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-auto">
+        <div class="input-group">
+          <label class="input-group-text" for="direccion">Dirección:</label>
+          <select class="form-select" id="direccion">
+            <option value="Origen">Origen</option>
+            <option value="Destino">Destino</option>
+            <option value="Bidireccional">Bidireccional</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-auto">
+        <div class="input-group">
+          <label class="input-group-text" for="tipo">Tipo:</label>
+          <select class="form-select" id="tipo">
+            <option value="Coche">Coche</option>
+            <option value="Peatón">Peatón</option>
+            <option value="Bicicleta">Bicicleta</option>
+            <option value="Tranvibus">Tranvibus</option>
+            <option value="Semáforo">Semáforo</option>
+            <option value="Bifurcación">Bifurcación</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-auto">
+        <div class="input-group">
+          <label class="input-group-text" for="carriles">Carriles:</label>
+          <select class="form-select" id="carriles">
+            <option value="1">1 carril</option>
+            <option value="2">2 carriles</option>
+            <option value="3">3 carriles</option>
+            <option value="4">4 carriles</option>
+            <option value="5+">5 o más carriles</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón Copiar -->
+    <button id="copyButton" style="
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    ">
+      Copiar
+    </button>
+
+    <script type="module" src="main.js"></script>
+    <script>
+      document.getElementById('copyButton').addEventListener('click', () => {
+        const points = JSON.parse(localStorage.getItem('savedPoints') || '[]');
+        const lines  = JSON.parse(localStorage.getItem('savedLines') || '[]');
+
+        const result = {
+          puntos: points,
+          lineas: lines
+        };
+
+        const text = JSON.stringify(result, null, 2);
+
+        navigator.clipboard.writeText(text)
+          .then(() => alert('Datos copiados al portapapeles'))
+          .catch(err => alert('Error al copiar: ' + err));
+      });
+    </script>
+    <div id="infoPopup" style="display: none; position: absolute; background: white; border: 1px solid #666;
+     padding: 8px; z-index: 1000;">
+      <textarea id="infoTextarea" rows="8" cols="30" readonly></textarea><br>
+      <button id="closeInfo">Cerrar</button>
+    </div>
+  </body>
+</html>
