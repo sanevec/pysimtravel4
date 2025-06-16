@@ -4,3 +4,6 @@ overpy
 geojson
 numpy
 pygame
+pandas
+sympy
+matplotlib
