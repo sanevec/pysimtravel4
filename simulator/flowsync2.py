@@ -1,6 +1,10 @@
 import pandas as pd
 import sympy as sp
 import numpy as np
+import csv
+import os
+
+
 
 class Slot:
     __slots__ = ('v', 't','tReal',"length") 
@@ -26,6 +30,12 @@ class Road:
         self.lastVelocity = velocity
         self.freeInputTime=0
         self.freeOutputTime=0
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))  # Get script directory
+        filename = self.name + ".csv"
+        self.filename = os.path.join(script_dir, filename) 
+
+        
 
 
 
@@ -74,6 +84,7 @@ class Road:
 
         if vehicle!=None:
             vehicle.log.append((time,"push",self.name))
+            self.add_to_road_csv(vehicle.car_id, time, "push")
             #self.freeInputTime=time+vehicle.totalDistance(self.velocity)/self.velocityms()
             self.freeInputTime=time+(vehicle.length*self.safetyDistance())/self.velocityms()
             # A que hora sale cabeza y cola 
@@ -116,12 +127,27 @@ class Road:
                 self.lastVelocity=0.8*self.lastVelocity+0.2*self.length/(q.tReal-q.v.log[-1][0])*3.6
                 #print(self.name,"lastVelocity",self.lastVelocity)
                 q.v.log.append((q.tReal,"get",self.name))
+                self.add_to_road_csv(q.v.car_id, q.tReal, "get")
                 #self.queueLength-=q[1].length
                 yield (q.tReal,q.v)
                 if self.outQ==self.inQ:
                     break
             else:
                 break
+    def add_to_road_csv(self, id_car, time, action):
+        
+        file_exists = os.path.isfile(self.filename)
+
+        # Open the CSV file in append mode
+        with open(self.filename, mode='a', newline='') as file:
+            writer = csv.writer(file)
+
+            # Write the header only if the file doesn't exist yet
+            if not file_exists:
+                writer.writerow(['id_car', 'time', 'action', 'inQ', 'outQ', 'outinQ'])
+
+            # Write the new row
+            writer.writerow([id_car, time, action, self.inQ, self.outQ, self.outinQ])
 
 class Phase:
     def __init__(self,intersection,split ):
@@ -193,7 +219,10 @@ class Intersection:
         return can0
         
 class Vehicle:
+    car_id = 0
     def __init__(self, length):
+        self.car_id = Vehicle.car_id
+        Vehicle.car_id += 1
         self.length = length
         self.log=[]
 
@@ -493,4 +522,5 @@ def main():
 if __name__ == "__main__":
     #aforo()
     main()
+    
     #rotonda()
