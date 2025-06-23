@@ -7,3 +7,4 @@ pygame
 pandas
 sympy
 matplotlib
+opencv-python
