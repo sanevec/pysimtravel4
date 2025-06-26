@@ -3,7 +3,7 @@ from Road import Road
 
 # Definition of roads
 
-road_generator = Road(car_generator=True)
+road_generator = Road(car_generator=True, )
 road1 = Road()
 road2 = Road()
 roads = [road_generator, road1, road2]

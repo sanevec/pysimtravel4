@@ -80,7 +80,7 @@ class Road:
 
 
 
-        time_to_move = self.global_t -self.prev_global_t
+        time_to_move = self.global_t - self.prev_global_t
         if time_to_move > 0: 
             #Move vehicles inside road
             for i in range(len(self.veh_pos_list)):
