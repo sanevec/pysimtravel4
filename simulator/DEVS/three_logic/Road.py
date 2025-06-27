@@ -13,7 +13,7 @@ class RoadState(Enum):
 class Road:
     id = 0
 
-    def __init__(self, road_length = 20, max_vel = 10, car_length = 5, car_generator = False, last_road = False):
+    def __init__(self, road_length = 20, max_vel = 10, car_length = 5, car_generator = False, car_deletion = False):
         self.road_id = Road.id
         Road.id += 1
 
@@ -22,6 +22,7 @@ class Road:
         self.road_length = road_length
         self.max_vel = max_vel
         self.car_generator = car_generator
+        self.car_deletion = car_deletion
         self.max_occupancy = int(self.road_length / car_length)
         self.min_time = round(self.road_length / self.max_vel, 2)  # Minimum time to complete the road
         self.car_generator =     car_generator

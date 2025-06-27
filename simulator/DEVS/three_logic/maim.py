@@ -7,7 +7,7 @@ import DEVS_3
 
 road_generator = Road(car_generator=True)
 road_1 = Road()
-road_2 = Road()
+road_2 = Road(car_deletion=True)
 
 
 print(road_generator)
