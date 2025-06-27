@@ -5,7 +5,6 @@ import csv
 import os
 
 
-
 class Slot:
     __slots__ = ('v', 't','tReal',"length") 
     def __init__(self):
@@ -34,8 +33,6 @@ class Road:
         script_dir = os.path.dirname(os.path.abspath(__file__))  # Get script directory
         filename = self.name + ".csv"
         self.filename = os.path.join(script_dir, filename) 
-
-        
 
 
 
@@ -121,10 +118,10 @@ class Road:
                 q.tReal=q.t+waiting
                 self.outQ+=1
                 if self.outQ>=len(self.q):
-                    self.outQ = 0
+                    self.outQ=0
                 self.lenQueue-=1
                 
-                self.lastVelocity = 0.8*self.lastVelocity+0.2*self.length/(q.tReal-q.v.log[-1][0])*3.6
+                self.lastVelocity=0.8*self.lastVelocity+0.2*self.length/(q.tReal-q.v.log[-1][0])*3.6
                 #print(self.name,"lastVelocity",self.lastVelocity)
                 q.v.log.append((q.tReal,"get",self.name))
                 self.add_to_road_csv(q.v.car_id, q.tReal, "get")
@@ -134,6 +131,7 @@ class Road:
                     break
             else:
                 break
+
     def add_to_road_csv(self, id_car, time, action):
         
         file_exists = os.path.isfile(self.filename)
@@ -150,15 +148,15 @@ class Road:
             writer.writerow([id_car, time, action, self.inQ, self.outQ, self.outinQ])
 
 class Phase:
-    aux = 0
+    id = 0
     def __init__(self,intersection,split ):
         self.intersection = intersection
         self.split = split
         self.io=[]
 
     def open(self, input, output,distance,velocity):
-        self.io.append((input, output, Road(distance, velocity,self.intersection.name + str(Phase.aux))))
-        Phase.aux += 1
+        self.io.append((input, output, Road(distance, velocity,self.intersection.name + f"{Phase.id}")))
+        Phase.id += 1
 
 
 class Intersection:
@@ -238,6 +236,8 @@ class Vehicle:
         # if velocity <= 50:
         #     return 28
 
+        
+
 class Executor:
     def __init__(self, f):
 
@@ -303,8 +303,8 @@ class Sensor:
         intervalo33=intervalo[:top33]
 
         # promedia intensidad
-        #print(f"Intensidad top5%: {sum([x[0] for x in intervalo5])/top5:.0f}({sum([x[1] for x in intervalo5])/top5*100:.0f}%)")
-        #print(f"Intensidad top33%: {sum([x[0] for x in intervalo33])/top33:.0f}({sum([x[1] for x in intervalo33])/top33*100:.0f}%)")
+        print(f"Intensidad top5%: {sum([x[0] for x in intervalo5])/top5:.0f}({sum([x[1] for x in intervalo5])/top5*100:.0f}%)")
+        print(f"Intensidad top33%: {sum([x[0] for x in intervalo33])/top33:.0f}({sum([x[1] for x in intervalo33])/top33*100:.0f}%)")
 
 
         # matplotlib intervalo
@@ -454,8 +454,6 @@ def main():
     inCars=0
     outCars=0
     time=[0,0]
-
-
     def insert():
         nonlocal time, inCars
         
@@ -486,14 +484,14 @@ def main():
 
     def remover():
         nonlocal outCars
-        # for t,v in road3.get(0):
-        #     if v==None:
-        #         break
-        #     # for l in v.log:
-        #     #     print(l)
-        #     # print()
-        #     outCars+=1
-        #     s.addVehicle(v)
+        for t,v in road3.get(0):
+            if v==None:
+                break
+            # for l in v.log:
+            #     print(l)
+            # print()
+            outCars+=1
+            s.addVehicle(v)
         for t,v in road4.get(0):
             if v==None:
                 break
@@ -510,14 +508,13 @@ def main():
         intersection.run,
         remover,
     ]
-    times_done = 0
     ip=0
     while True:
         while programa[ip]():
             pass
         ip=(ip+1)%len(programa)
         #print(inCars-outCars)
-        if inCars>100:
+        if outCars==inCars and inCars>10:
             break
     s.study()
 

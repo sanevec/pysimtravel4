@@ -26,9 +26,11 @@ Para este modelo, se propone una división de las calles en segmentos con direcc
 - Velocidad máxima permitida (velocity). 
 - 
 
+## PRUEBAS
+Simultaneamente, se realizaban simulaciones para entender mejor el comortamiento y siguiendo las trazas.
+Se pueden encontrar las trazas y notebook en el directorio "trace_study".
 
+Se para el estudio del comportamiento del algoritmo debido a que no se va a poder seguir usando debido a conflictos. Se pasa a un intento de modelado por DEVS
 
-## Punteros
-
-
-## Modelo cruce
+# Conclusiones
+Modelado por DEVS
