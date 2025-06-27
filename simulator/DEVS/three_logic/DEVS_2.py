@@ -11,7 +11,9 @@ def step_3(road: Road, before_road: Road):
     if before_road is not None:
 
         before_road.next_road_global_t = road.global_t
-        before_road.next_road_state_buffer = "Ocuppied" if road.is_full() else "Free"
+        position, _ = road.get_last_vehicle()
+        position = position if position is not None else road.road_length
+        before_road.next_road_state_buffer = "Ocuppied" if road.is_full() or (position <10) else "Free"
 
 
 def step_5_6(road: Road):

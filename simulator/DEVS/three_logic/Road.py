@@ -117,6 +117,16 @@ class Road:
         velocity = self.vel_vehicles[self.head_queue]
         return vehicle, velocity
     
+    def get_last_vehicle(self):
+        if self.is_empty():
+            raise Exception("Queue is empty")
+        
+        # Calculate index of the last inserted element
+        last_index = (self.tail_queue - 1 + self.max_occupancy) % self.max_occupancy
+        vehicle = self.position_vehicles[last_index]
+        velocity = self.vel_vehicles[last_index]
+        return vehicle, velocity
+    
     def update_state(self, next_road_event):
         if (self.state == RoadState.Ssend or self.state == RoadState.So) and (next_road_event == "Ocuppied") :
             self.state = RoadState.Sno

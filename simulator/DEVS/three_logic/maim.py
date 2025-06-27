@@ -39,7 +39,7 @@ for i in range(NOF_iter):
     DEVS_1.step_6(road_generator)
     DEVS_1.step_6(road_1)       
     DEVS_1.step_6(road_2)
-    #print("           DEVS 1.6-------------------------------------")
+    # print("           DEVS 1.6-------------------------------------")
     # print(road_generator)
     # print(road_1)   
     # print(road_2)
@@ -55,7 +55,7 @@ for i in range(NOF_iter):
     # print(road_1)   
     # print(road_2)
 
-    #print("           DEVS 2.56-------------------------------------")
+    # print("           DEVS 2.56-------------------------------------")
     DEVS_2.step_5_6(road_generator)
     DEVS_2.step_5_6(road_1) 
     DEVS_2.step_5_6(road_2)
