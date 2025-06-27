@@ -40,7 +40,7 @@ class Road:
         if the speed is variable some more calculations should be done as the lcm
         """
         #time_to_complete = [round((self.road_length - veh_pos )/self.veh_vel, 2) for veh_pos in self.veh_pos_list] 
-        time_to_complete = [round((self.road_length - i*4- self.veh_pos_list[i])/self.veh_vel,2) for i in range(len(self.veh_pos_list))]
+        time_to_complete = [round((self.road_length - i*self.car_size- self.veh_pos_list[i])/self.veh_vel,2) for i in range(len(self.veh_pos_list))]
         time_to_complete = [t for t in time_to_complete if t>0]
     
 
