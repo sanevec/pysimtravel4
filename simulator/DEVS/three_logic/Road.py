@@ -57,10 +57,16 @@ class Road:
 
 
     def is_full(self):
-        if self.tail_queue == -1:
+        try:
+            position, _ = self.consult_last_vehicle()
+        except: 
+            position = None
+        # If the queue is empty, it is not full
+        if position is None or position >= 10:
             return False
         else:
-            return (self.tail_queue +1 ) % (self.max_occupancy +1 ) == self.head_queue 
+            return True
+
 
     def is_empty(self):
         return self.head_queue == self.tail_queue
@@ -118,7 +124,7 @@ class Road:
         velocity = self.vel_vehicles[self.head_queue]
         return vehicle, velocity
     
-    def get_last_vehicle(self):
+    def consult_last_vehicle(self):
         if self.is_empty():
             raise Exception("Queue is empty")
         
@@ -168,9 +174,17 @@ class Road:
             vehicle_idx += 1
 
 
+    # def __str__(self):
+    #     return f"Road ID: {self.road_id},t {self.global_t}, Pos vehicles: {str(self.position_vehicles)}  State: {self.state.name},  head: {self.head_queue}, tail: {self.tail_queue} \n\r" \
+    #            f"    Max global t: {self.max_global_t}, Global t: {self.global_t}, prev_glob: {self.prev_global_t}  \n\r" \
+    #            f"    Previous road max global t: {self.previous_road_max_global_t}, Previous road global t: {self.previous_road_global_t} \n \r" \
+    #            f"    Next road global t: {self.next_road_global_t}" \
+    #            f", Send car: {self.send_car} \n"                
+                
     def __str__(self):
-        return f"Road ID: {self.road_id},t {self.global_t}, Pos vehicles: {str(self.position_vehicles)}  State: {self.state.name},  head: {self.head_queue}, tail: {self.tail_queue}" 
-    
+        return f"Road ID: {self.road_id},t {self.global_t}, Pos vehicles: {str(self.position_vehicles)}  State: {self.state.name},  head: {self.head_queue}, tail: {self.tail_queue} " 
+                    
+
     def min_time_to_complete(self): 
         """
         Computes the minimum time for any vehicle in the queue to reach the end of the road.
