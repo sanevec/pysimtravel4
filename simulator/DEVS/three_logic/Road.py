@@ -57,10 +57,20 @@ class Road:
 
 
     def is_full(self):
-        if self.tail_queue == -1:
-            return False
-        else:
-            return (self.tail_queue +1 ) % (self.max_occupancy +1 ) == self.head_queue 
+        try:
+            position, _ = self.consult_last_vehicle()
+        except Exception:
+            position = None
+        res = False
+        if position is not None and position <= 5 :
+            res = True
+        
+        return res
+
+        # if self.tail_queue == -1:
+        #     return False
+        # else:
+        #     return (self.tail_queue +1 ) % (self.max_occupancy +1 ) == self.head_queue 
 
     def is_empty(self):
         return self.head_queue == self.tail_queue
@@ -118,7 +128,7 @@ class Road:
         velocity = self.vel_vehicles[self.head_queue]
         return vehicle, velocity
     
-    def get_last_vehicle(self):
+    def consult_last_vehicle(self):
         if self.is_empty():
             raise Exception("Queue is empty")
         
