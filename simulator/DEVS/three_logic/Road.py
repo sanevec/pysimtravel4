@@ -30,8 +30,8 @@ class Road:
         # Road dynamic parameters
         self.state = RoadState.So
         #Circular queue of vehicles
-        self.position_vehicles = [-1] * (self.max_occupancy + 1)
-        self.vel_vehicles = [max_vel] * (self.max_occupancy +1)
+        self.position_vehicles = [-1] * (self.max_occupancy )
+        self.vel_vehicles = [max_vel] * (self.max_occupancy)
         self.head_queue = 0
         self.tail_queue = -1 # Start with -1 to allow first push to index 0
         self.move_min_time = self.min_time  
@@ -81,12 +81,12 @@ class Road:
             self.tail_queue = 0  
             self.position_vehicles[self.tail_queue] = position
             self.vel_vehicles[self.tail_queue] = velocity
-            self.tail_queue = (self.tail_queue + 1) % (self.max_occupancy +1)
+            self.tail_queue = (self.tail_queue + 1) % (self.max_occupancy)
   
         else:
             self.position_vehicles[self.tail_queue] = position
             self.vel_vehicles[self.tail_queue] = velocity
-            self.tail_queue = (self.tail_queue + 1) % (self.max_occupancy +1)
+            self.tail_queue = (self.tail_queue + 1) % (self.max_occupancy)
 
     def get_vehicle(self):
         
@@ -96,7 +96,7 @@ class Road:
         velocity = self.vel_vehicles[self.head_queue]
         self.position_vehicles[self.head_queue] = -1
         self.vel_vehicles[self.head_queue] = self.max_vel
-        self.head_queue = (self.head_queue + 1) % (self.max_occupancy +1)
+        self.head_queue = (self.head_queue + 1) % (self.max_occupancy )
         return vehicle, velocity
     
     def get_active_queue_data(self):
@@ -114,7 +114,7 @@ class Road:
             vehicle = self.position_vehicles[index]
             velocity = self.vel_vehicles[index]
             active_data.append((vehicle, velocity, index))
-            index = (index + 1) % (self.max_occupancy +1)
+            index = (index + 1) % (self.max_occupancy )
 
         return active_data
     
@@ -173,7 +173,7 @@ class Road:
                 self.position_vehicles[index] = position
                 self.vel_vehicles[index] = velocity
 
-            index = (index + 1) % (self.max_occupancy +1 )
+            index = (index + 1) % (self.max_occupancy )
             vehicle_idx += 1
 
 
@@ -208,7 +208,7 @@ class Road:
 
                 time_to_complete.append(time)
                 
-                index = (index + 1) % (self.max_occupancy +1)
+                index = (index + 1) % (self.max_occupancy)
                 i += 1  # increment logical queue index
 
         time_to_complete = min(time_to_complete) if len(time_to_complete) > 0 else self.min_time
