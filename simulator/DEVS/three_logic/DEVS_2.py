@@ -17,7 +17,7 @@ def step_3(road: Road, before_road: Road):
         except:
             position = None
         
-        position = position if position is not None else 20
+        position = position if position is not None else road.road_length
         before_road.next_road_state_buffer = "Ocuppied" if road.is_full() or (position <10) else "Free"
 
 

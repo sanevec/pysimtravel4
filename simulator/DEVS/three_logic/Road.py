@@ -30,8 +30,8 @@ class Road:
         # Road dynamic parameters
         self.state = RoadState.So
         #Circular queue of vehicles
-        self.position_vehicles = [None] * (self.max_occupancy +1 )
-        self.vel_vehicles = [None] * (self.max_occupancy +1 )
+        self.position_vehicles = [-1] * (self.max_occupancy + 1)
+        self.vel_vehicles = [max_vel] * (self.max_occupancy +1)
         self.head_queue = 0
         self.tail_queue = -1 # Start with -1 to allow first push to index 0
         self.move_min_time = self.min_time  
@@ -62,7 +62,8 @@ class Road:
         except: 
             position = None
         # If the queue is empty, it is not full
-        if position is None or position >= 10:
+        print(position)
+        if position is None or position >= 10 or position == -1:
             return False
         else:
             return True
@@ -93,8 +94,8 @@ class Road:
             raise Exception("Queue is empty")
         vehicle = self.position_vehicles[self.head_queue]
         velocity = self.vel_vehicles[self.head_queue]
-        self.position_vehicles[self.head_queue] = None
-        self.vel_vehicles[self.head_queue] = None
+        self.position_vehicles[self.head_queue] = -1
+        self.vel_vehicles[self.head_queue] = self.max_vel
         self.head_queue = (self.head_queue + 1) % (self.max_occupancy +1)
         return vehicle, velocity
     
@@ -125,14 +126,16 @@ class Road:
         return vehicle, velocity
     
     def consult_last_vehicle(self):
-        if self.is_empty():
-            raise Exception("Queue is empty")
-        
-        # Calculate index of the last inserted element
-        last_index = (self.tail_queue - 1 + self.max_occupancy) % self.max_occupancy
-        vehicle = self.position_vehicles[last_index]
-        velocity = self.vel_vehicles[last_index]
-        return vehicle, velocity
+        try:
+
+            # Calculate index of the last inserted element
+            last_index = (self.tail_queue - 1 + self.max_occupancy) % self.max_occupancy
+            vehicle = self.position_vehicles[last_index]
+            velocity = self.vel_vehicles[last_index]
+            return vehicle, velocity
+        except:
+            return None, None
+    
     
     def update_state(self, next_road_event):
         if (self.state == RoadState.Ssend or self.state == RoadState.So) and (next_road_event == "Ocuppied") :
@@ -199,14 +202,14 @@ class Road:
                 position = self.position_vehicles[index]
                 velocity = self.vel_vehicles[index]
                 
-                if position is not None and  velocity > 0:
-                    distance_remaining = self.road_length - i * self.car_length - position
-                    time = round(distance_remaining / velocity, 2)
-                    if time > 0:
-                        time_to_complete.append(time)
+              
+                distance_remaining = self.road_length - i * self.car_length - position
+                time = round(distance_remaining / velocity, 2)
+
+                time_to_complete.append(time)
                 
                 index = (index + 1) % (self.max_occupancy +1)
                 i += 1  # increment logical queue index
 
-        time_to_complete = min(time_to_complete) if time_to_complete else 0
+        time_to_complete = min(time_to_complete) if len(time_to_complete) > 0 else self.min_time
         self.max_global_t = round(self.global_t + time_to_complete, 2)
