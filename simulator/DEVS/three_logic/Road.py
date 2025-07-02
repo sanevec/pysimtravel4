@@ -13,7 +13,7 @@ class RoadState(Enum):
 class Road:
     id = 0
 
-    def __init__(self, road_length = 20, max_vel = 10, car_length = 5, car_generator = False, car_deletion = False):
+    def __init__(self, road_length = 20, max_vel = 10, car_length = 5, car_generator = False, car_deletion = False, red_light = False, red_light_time = None):
         self.road_id = Road.id
         Road.id += 1
 
@@ -26,15 +26,18 @@ class Road:
         self.max_occupancy = int(self.road_length / car_length)
         self.min_time = round(self.road_length / self.max_vel, 2)  # Minimum time to complete the road
         self.car_generator =     car_generator
+        self.red_light_time = red_light_time
 
         # Road dynamic parameters
         self.state = RoadState.So
         #Circular queue of vehicles
-        self.position_vehicles = [None] * (self.max_occupancy +1 )
-        self.vel_vehicles = [None] * (self.max_occupancy +1 )
+        self.position_vehicles = [-1] * (self.max_occupancy )
+        self.vel_vehicles = [max_vel] * (self.max_occupancy)
         self.head_queue = 0
         self.tail_queue = -1 # Start with -1 to allow first push to index 0
         self.move_min_time = self.min_time  
+
+        self.red_light = red_light  # If True, the road is in red light mode, no cars can go out the road
 
         #Road time parameters
         self.global_t = 0
@@ -48,6 +51,7 @@ class Road:
         self.previous_road_max_global_t = None
         self.previous_road_global_t = None
         self.next_road_state_buffer = None
+        self.next_road_red_light = False
 
 
         self.next_road_global_t = None
@@ -62,7 +66,7 @@ class Road:
         except: 
             position = None
         # If the queue is empty, it is not full
-        if position is None or position >= 10:
+        if position is None or position >= 10 or position == -1:
             return False
         else:
             return True
@@ -80,12 +84,12 @@ class Road:
             self.tail_queue = 0  
             self.position_vehicles[self.tail_queue] = position
             self.vel_vehicles[self.tail_queue] = velocity
-            self.tail_queue = (self.tail_queue + 1) % (self.max_occupancy +1)
+            self.tail_queue = (self.tail_queue + 1) % (self.max_occupancy)
   
         else:
             self.position_vehicles[self.tail_queue] = position
             self.vel_vehicles[self.tail_queue] = velocity
-            self.tail_queue = (self.tail_queue + 1) % (self.max_occupancy +1)
+            self.tail_queue = (self.tail_queue + 1) % (self.max_occupancy)
 
     def get_vehicle(self):
         
@@ -93,9 +97,9 @@ class Road:
             raise Exception("Queue is empty")
         vehicle = self.position_vehicles[self.head_queue]
         velocity = self.vel_vehicles[self.head_queue]
-        self.position_vehicles[self.head_queue] = None
-        self.vel_vehicles[self.head_queue] = None
-        self.head_queue = (self.head_queue + 1) % (self.max_occupancy +1)
+        self.position_vehicles[self.head_queue] = -1
+        self.vel_vehicles[self.head_queue] = self.max_vel
+        self.head_queue = (self.head_queue + 1) % (self.max_occupancy )
         return vehicle, velocity
     
     def get_active_queue_data(self):
@@ -113,7 +117,7 @@ class Road:
             vehicle = self.position_vehicles[index]
             velocity = self.vel_vehicles[index]
             active_data.append((vehicle, velocity, index))
-            index = (index + 1) % (self.max_occupancy +1)
+            index = (index + 1) % (self.max_occupancy )
 
         return active_data
     
@@ -125,14 +129,16 @@ class Road:
         return vehicle, velocity
     
     def consult_last_vehicle(self):
-        if self.is_empty():
-            raise Exception("Queue is empty")
-        
-        # Calculate index of the last inserted element
-        last_index = (self.tail_queue - 1 + self.max_occupancy) % self.max_occupancy
-        vehicle = self.position_vehicles[last_index]
-        velocity = self.vel_vehicles[last_index]
-        return vehicle, velocity
+        try:
+
+            # Calculate index of the last inserted element
+            last_index = (self.tail_queue - 1 + self.max_occupancy) % self.max_occupancy
+            vehicle = self.position_vehicles[last_index]
+            velocity = self.vel_vehicles[last_index]
+            return vehicle, velocity
+        except:
+            return None, None
+    
     
     def update_state(self, next_road_event):
         if (self.state == RoadState.Ssend or self.state == RoadState.So) and (next_road_event == "Ocuppied") :
@@ -170,7 +176,7 @@ class Road:
                 self.position_vehicles[index] = position
                 self.vel_vehicles[index] = velocity
 
-            index = (index + 1) % (self.max_occupancy +1 )
+            index = (index + 1) % (self.max_occupancy )
             vehicle_idx += 1
 
 
@@ -199,14 +205,20 @@ class Road:
                 position = self.position_vehicles[index]
                 velocity = self.vel_vehicles[index]
                 
-                if position is not None and  velocity > 0:
-                    distance_remaining = self.road_length - i * self.car_length - position
-                    time = round(distance_remaining / velocity, 2)
-                    if time > 0:
-                        time_to_complete.append(time)
+            
+                distance_remaining = self.road_length - i * self.car_length - position
+                time = round(distance_remaining / velocity, 2)
                 
-                index = (index + 1) % (self.max_occupancy +1)
+                time_to_complete.append(time)
+                
+                index = (index + 1) % (self.max_occupancy)
                 i += 1  # increment logical queue index
 
-        time_to_complete = min(time_to_complete) if time_to_complete else 0
+        # if self.red_light and self.red_light_time is not None:
+        #     time_to_complete.append(self.red_light_time)
+
+
+        
+
+        time_to_complete = min(time_to_complete) if len(time_to_complete) > 0 else self.min_time
         self.max_global_t = round(self.global_t + time_to_complete, 2)
