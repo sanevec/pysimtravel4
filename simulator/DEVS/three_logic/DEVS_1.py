@@ -8,7 +8,7 @@ def step_3(road:Road, next_road: Road):
     Step 3: Send event to next road.
 
     """
-    #road.min_time_to_complete()
+    road.min_time_to_complete()
     if next_road is not None:
         next_road.previous_road_max_global_t = road.max_global_t
         next_road.previous_road_global_t = road.global_t 
