@@ -20,11 +20,11 @@ clear_terminal()
 road_generator = Road(car_generator = True)
 #road_generator.push_vehicle(5, 10)  # Push a vehicle to the generator road
 road_1 = Road()
-road_2 = Road(car_deletion = False)
+road_2 = Road(car_deletion = False, red_light= True, red_light_time = 5)
 
 
 print(road_generator)
-print(road_1)   
+print(road_1)    
 print(road_2)
 NOF_iter = 20
 
