@@ -130,7 +130,6 @@ class Road:
     
     def consult_last_vehicle(self):
         try:
-
             # Calculate index of the last inserted element
             last_index = (self.tail_queue - 1 + self.max_occupancy) % self.max_occupancy
             vehicle = self.position_vehicles[last_index]
@@ -179,6 +178,8 @@ class Road:
             index = (index + 1) % (self.max_occupancy )
             vehicle_idx += 1
 
+        
+
 
     # def __str__(self):
     #     return f"Road ID: {self.road_id},t {self.global_t}, Pos vehicles: {str(self.position_vehicles)}  State: {self.state.name},  head: {self.head_queue}, tail: {self.tail_queue} \n\r" \
@@ -197,28 +198,35 @@ class Road:
         Vehicles are stored in a circular queue, and each has a position.
         All vehicles have the same velocity: self.veh_vel
         """
-        time_to_complete = []
+        
+        ext_veh_pos = [self.road_length + self.car_length]
+        ext_veh_vel = [0]
+
         if self.tail_queue != -1:
             index = self.head_queue
-            i = 0  # Queue position index
             while index != self.tail_queue:
-                position = self.position_vehicles[index]
-                velocity = self.vel_vehicles[index]
-                
-            
-                distance_remaining = self.road_length - i * self.car_length - position
-                time = round(distance_remaining / velocity, 2)
-                
-                time_to_complete.append(time)
-                
-                index = (index + 1) % (self.max_occupancy)
-                i += 1  # increment logical queue index
+                ext_veh_pos.append(self.position_vehicles[index])
+                ext_veh_vel.append(self.vel_vehicles[index])
+                index = (index + 1) % self.max_occupancy
 
-        # if self.red_light and self.red_light_time is not None:
-        #     time_to_complete.append(self.red_light_time)
+        nof_vehicles = (self.tail_queue - self.head_queue + self.max_occupancy) % self.max_occupancy
 
+        # Inicializamos con tiempo máximo posible
+        time_to_complete = [self.road_length / self.max_vel] * (nof_vehicles)
 
-        
-
-        time_to_complete = min(time_to_complete) if len(time_to_complete) > 0 else self.min_time
-        self.max_global_t = round(self.global_t + time_to_complete, 2)
+        for i in range(nof_vehicles):
+            try:
+                vel_diff = ext_veh_vel[i + 1] - ext_veh_vel[i]
+                if vel_diff > 0:
+                    gap = ext_veh_pos[i] - ext_veh_pos[i + 1] - self.car_length
+                    time_to_complete[i + 1] = gap / vel_diff
+            except IndexError:
+                # Esto no debería ocurrir si las listas están bien construidas
+                time_to_complete.append(gap / vel_diff)
+                continue
+            except ZeroDivisionError:
+                # Si las velocidades son iguales, no se puede calcular correctamente
+                continue
+        print(time_to_complete)
+        min_time = min(time_to_complete) if time_to_complete else self.min_time
+        self.max_global_t = round(self.global_t + min_time, 2)
