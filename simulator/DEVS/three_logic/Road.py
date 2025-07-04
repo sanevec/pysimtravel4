@@ -235,7 +235,7 @@ class Road:
                 continue
         if time_to_complete:     
             if self.traffic_jam:
-                min_time = min([e for e in time_to_complete if e>0] )
+                min_time = min([e for e in time_to_complete if e>0 ] )
             else:
                 min_time = min(time_to_complete)
         else:

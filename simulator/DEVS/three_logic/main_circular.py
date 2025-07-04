@@ -18,7 +18,7 @@ clear_terminal()
 
 
 road_generator = Road(car_generator = False)
-road_generator.push_vehicle(15, 5)
+road_generator.push_vehicle(10, 10)
 road_generator.push_vehicle(5, 10)  # Push a vehicle to the generator road
 road_1 = Road()
 road_1.push_vehicle(17,10)
