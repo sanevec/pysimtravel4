@@ -26,7 +26,7 @@ def step_5(road:Road):
     #     else:
     #         ppglobal_t = min(road.max_global_t, road.previous_road_max_global_t)
     #     road.global_t = ppglobal_t
-    print(f"Road {road.road_id} - Previous Road Max Global T: {road.previous_road_max_global_t},  Max Global T: {road.max_global_t}")
+    #print(f"Road {road.road_id} {road.position_vehicles}- Previous Road Max Global T: {road.previous_road_max_global_t},  Max Global T: {road.max_global_t}")
 
     road.global_t = min(road.max_global_t, road.previous_road_max_global_t) 
 
@@ -37,6 +37,7 @@ def step_6(road:Road):
     # Move vehicles in road
     road.move_vehicles()
     road.prev_global_t = road.global_t
+    #print(f"Road {road.road_id} t {road.global_t} {road.position_vehicles}- Previous Road Max Global T: {road.previous_road_max_global_t},  Max Global T: {road.max_global_t}")
 
 
 

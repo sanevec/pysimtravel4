@@ -11,37 +11,42 @@ def step_3(road: Road, before_road: Road):
     if before_road is not None:
 
         before_road.next_road_global_t = road.global_t
-        
-
+        nof_vehicles = (road.tail_queue - road.head_queue + road.max_occupancy) % road.max_occupancy
         try:
-            position, _ = road.get_last_vehicle()
+            position, _ = road.consult_last_vehicle()
         except:
-            position = None
+            position = road.road_length
         
-        position = position if position is not None else road.road_length
-        before_road.next_road_state_buffer = "Ocuppied" if road.is_full() or (position <5) else "Free"
+        before_road.next_road_vehicle_position = position
+        before_road.next_road_nof_vehicles = (road.tail_queue - road.head_queue + road.max_occupancy) % road.max_occupancy
+        before_road.next_road_max_nof_vehicles = road.max_occupancy # it could be done in a prephase as this will never change
         before_road.next_road_red_light = road.red_light
 
 
 def step_5_6(road: Road):
-    road.update_state(road.next_road_state_buffer)
-    if not road.is_empty():
-        position, velocity = road.consult_vehicle()
+    next_road_state = "Free" if road.next_road_vehicle_position is  None or road.next_road_vehicle_position>=5 else "Ocuppied"
+    road.update_state(next_road_state)
 
-        verify_position = (position is not None) and (position == road.road_length)
-        verify_next_road = (road.state == RoadState.Ssend) and (road.next_road_global_t == road.global_t) and road.next_road_state_buffer == "Free"
-        verify_road_car_deletion = road.car_deletion
-        #print(f" ver position {verify_position}, ver next road {verify_next_road}")
-        #print(f"1:{road.state == RoadState.Ssend} 2:{road.next_road_global_t == road.global_t} 3:{road.next_road_state_buffer == "Free"}  ")
+    try:
+        position, _ = road.consult_vehicle()
+    except:
+        position = -1
 
-        road.send_car =  verify_position and (verify_next_road or verify_road_car_deletion)
-                                                                                       
-
-
-        #print(f"Road {road.road_id} send car: {road.send_car}; next_road_global_t: {road.next_road_global_t}, global_t: {road.global_t}, position: {position}, velocity: {velocity}")
-    
-    
+    #print(f"1: {road.road_length - position < 1e-6} 2: {road.next_road_global_t == road.global_t} 3:{road.next_road_nof_vehicles != road.next_road_max_nof_vehicles} 4: ")
+    if (road.road_length - position < 1e-6) and \
+        (road.next_road_global_t == road.global_t) and \
+            (road.next_road_nof_vehicles != road.next_road_max_nof_vehicles):
+        # print(f"{road.road_id} next_road_position{road.next_road_vehicle_position}")
+        if (road.next_road_nof_vehicles == 0) or (road.next_road_vehicle_position >= road.car_length):
+            road.send_car = True
+            road.traffic_jam = False 
+        else:
+            road.send_car = False
+            road.traffic_jam = True
+ 
     else:
         road.send_car = False
+        road.traffic_jam = False
 
-    #road.update_state(road.next_road_state_buffer)
+
+    #road.update_state(road.next_road_vehicle_position)

@@ -20,7 +20,9 @@ def step_3_5_6(road: Road, next_road: Road):
             print(f" Push generator ")
 
 
-    if road.send_car and next_road is not None:
+
+    if road.send_car and (next_road is not None) :
+        
         position, velocity = road.get_vehicle()
         next_road.push_vehicle(0, velocity)
 

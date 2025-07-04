@@ -36,6 +36,7 @@ class Road:
         self.head_queue = 0
         self.tail_queue = -1 # Start with -1 to allow first push to index 0
         self.move_min_time = self.min_time  
+        self.traffic_jam = False        
 
         self.red_light = red_light  # If True, the road is in red light mode, no cars can go out the road
 
@@ -50,9 +51,10 @@ class Road:
         self.previous_road_vehicle_buffer = None
         self.previous_road_max_global_t = None
         self.previous_road_global_t = None
-        self.next_road_state_buffer = None
+        self.next_road_vehicle_position = None
         self.next_road_red_light = False
-
+        self.next_road_nof_vehicles = 0
+        self.next_road_max_nof_vehicles = 0
 
         self.next_road_global_t = None
         self.next_road_state = None
@@ -66,7 +68,7 @@ class Road:
         except: 
             position = None
         # If the queue is empty, it is not full
-        if position is None or position >= 10 or position == -1:
+        if position is None or position >= 5 or position == -1:
             return False
         else:
             return True
@@ -144,7 +146,7 @@ class Road:
             self.state = RoadState.Sno
         elif (self.state == RoadState.Sno or self.state == RoadState.So)  and (next_road_event == "Free"):
             self.state = RoadState.Ssend
-
+     
 
     def move_vehicles(self):
         """
@@ -189,7 +191,9 @@ class Road:
     #            f", Send car: {self.send_car} \n"                
                 
     def __str__(self):
-        return f"Road ID: {self.road_id},t {self.global_t}, Pos vehicles: {str(self.position_vehicles)}  State: {self.state.name},  head: {self.head_queue}, tail: {self.tail_queue} " 
+        return f"ID: {self.road_id},t {self.global_t}, Pos vehicles: {str(self.position_vehicles)}  State: {self.state.name},  tj: {self.traffic_jam}, head-tail: {self.head_queue}-{self.tail_queue} " \
+                # f" \n\r     traffic jam {self.traffic_jam}, send_car {self.send_car}"
+                
                     
 
     def min_time_to_complete(self): 
@@ -211,6 +215,8 @@ class Road:
 
         nof_vehicles = (self.tail_queue - self.head_queue + self.max_occupancy) % self.max_occupancy
 
+
+           
         # Inicializamos con tiempo máximo posible
         time_to_complete = [self.road_length / self.max_vel] * (nof_vehicles)
 
@@ -227,6 +233,12 @@ class Road:
             except ZeroDivisionError:
                 # Si las velocidades son iguales, no se puede calcular correctamente
                 continue
-        print(time_to_complete)
-        min_time = min(time_to_complete) if time_to_complete else self.min_time
+        if time_to_complete:     
+            if self.traffic_jam:
+                min_time = min([e for e in time_to_complete if e>0] )
+            else:
+                min_time = min(time_to_complete)
+        else:
+            min_time = self.min_time
+
         self.max_global_t = round(self.global_t + min_time, 2)
