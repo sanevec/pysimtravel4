@@ -124,6 +124,7 @@ Because DEVS limits to one input/output per transition, the traffic system is st
 - **Step 3:** Sends `global_t`, `nof_vehicles`, `poistion of the last car in the road` of the road to the next one
 - **Steps 5–6:** Evaluates if first vehicle in the queue meets the transition conditions  
   - If yes, sets `send_car = True`
+  - Also evaluates if there is a traffic jam in the road.
 
 ---
 
