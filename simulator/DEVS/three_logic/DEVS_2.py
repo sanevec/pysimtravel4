@@ -54,7 +54,7 @@ def step_5_6(road: Road) -> None:
     road.update_state(next_road_state)
 
     try:
-        position, _ = road.consult_vehicle()
+        position, _, _ = road.consult_vehicle()
     except Exception:
         position = -1
 

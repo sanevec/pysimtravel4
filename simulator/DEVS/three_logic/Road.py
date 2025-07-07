@@ -55,6 +55,7 @@ class Road:
         self.state = RoadState.So
         self.position_vehicles = [-1] * self.max_occupancy
         self.vel_vehicles = [max_vel] * self.max_occupancy
+        self.acceleration_vehicles = [0] * self.max_occupancy
         self.head_queue = 0
         self.tail_queue = -1
         self.move_min_time = self.min_time
@@ -100,12 +101,13 @@ class Road:
         """
         return self.head_queue == self.tail_queue
 
-    def push_vehicle(self, position: float, velocity: float) -> None:
+    def push_vehicle(self, position: float, velocity: float, acceleration: float) -> None:
         """Adds a vehicle to the road queue.
 
         Args:
             position (float): Position of the vehicle.
             velocity (float): Velocity of the vehicle.
+            acceleration (float): acceleration of the vehicle
 
         Raises:
             Exception: If the road queue is full.
@@ -118,9 +120,10 @@ class Road:
 
         self.position_vehicles[self.tail_queue] = position
         self.vel_vehicles[self.tail_queue] = velocity
+        self.acceleration_vehicles[self.tail_queue] = acceleration
         self.tail_queue = (self.tail_queue + 1) % self.max_occupancy
 
-    def get_vehicle(self) -> tuple[float, float]:
+    def get_vehicle(self) -> tuple[float, float, float]:
         """Retrieves and removes the vehicle at the head of the queue.
 
         Returns:
@@ -134,12 +137,16 @@ class Road:
 
         vehicle = self.position_vehicles[self.head_queue]
         velocity = self.vel_vehicles[self.head_queue]
+        acceleration = self.acceleration_vehicles[self.head_queue]
+
         self.position_vehicles[self.head_queue] = -1
         self.vel_vehicles[self.head_queue] = self.max_vel
-        self.head_queue = (self.head_queue + 1) % self.max_occupancy
-        return vehicle, velocity
+        self.acceleration_vehicles[self.head_queue] = self.max_vel
 
-    def get_active_queue_data(self) -> list[tuple[float, float, int]]:
+        self.head_queue = (self.head_queue + 1) % self.max_occupancy
+        return vehicle, velocity, acceleration
+
+    def get_active_queue_data(self) -> list[tuple[float, float,float,  int]]:
         """Retrieves all active vehicles from the circular queue in order.
 
         Returns:
@@ -153,16 +160,17 @@ class Road:
         while index != self.tail_queue:
             vehicle = self.position_vehicles[index]
             velocity = self.vel_vehicles[index]
-            active_data.append((vehicle, velocity, index))
+            acceleration = self.acceleration_vehicles[index]
+            active_data.append((vehicle, velocity,acceleration, index))
             index = (index + 1) % self.max_occupancy
 
         return active_data
 
-    def consult_vehicle(self) -> tuple[float, float]:
+    def consult_vehicle(self) -> tuple[float, float, float]:
         """Consults the vehicle at the head of the queue.
 
         Returns:
-            tuple[float, float]: Position and velocity of the vehicle.
+            tuple[float, float, float]: Position, velocity and acceleration of the vehicle.
 
         Raises:
             Exception: If the queue is empty.
@@ -172,9 +180,10 @@ class Road:
 
         vehicle = self.position_vehicles[self.head_queue]
         velocity = self.vel_vehicles[self.head_queue]
-        return vehicle, velocity
+        acceleration = self.acceleration_vehicles[self.head_queue]
+        return vehicle, velocity, acceleration
 
-    def consult_last_vehicle(self) -> tuple[float | None, float | None]:
+    def consult_last_vehicle(self) -> tuple[float | None, float | None, float | None]:
         """Retrieves the last inserted vehicle in the queue.
 
         Returns:
@@ -184,9 +193,10 @@ class Road:
             last_index = (self.tail_queue - 1 + self.max_occupancy) % self.max_occupancy
             vehicle = self.position_vehicles[last_index]
             velocity = self.vel_vehicles[last_index]
-            return vehicle, velocity
+            acceleration = self.acceleration_vehicles[self.head_queue]
+            return vehicle, velocity, acceleration
         except Exception:
-            return None, None
+            return None, None, None
 
     def update_state(self, next_road_event: str) -> None:
         """Updates the road state based on the next road's availability.

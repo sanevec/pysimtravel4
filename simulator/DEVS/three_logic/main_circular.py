@@ -18,12 +18,12 @@ clear_terminal()
 
 
 road_generator = Road(car_generator = False)
-road_generator.push_vehicle(10, 10)
-road_generator.push_vehicle(5, 10)  # Push a vehicle to the generator road
+road_generator.push_vehicle(10, 10, 1)
+road_generator.push_vehicle(5, 10, 1)  # Push a vehicle to the generator road
 road_1 = Road()
-road_1.push_vehicle(17,10)
+road_1.push_vehicle(17,10,1)
 road_2 = Road(car_deletion = False)
-road_2.push_vehicle(10,10)
+road_2.push_vehicle(10,10,1)
 
   
 print(road_generator)

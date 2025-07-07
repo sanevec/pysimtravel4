@@ -17,8 +17,8 @@ def step_3_5_6(road: Road, next_road: Road) -> None:
     """
     # Move car to next road if allowed
     if road.send_car and next_road is not None:
-        position, velocity = road.get_vehicle()
-        next_road.push_vehicle(0, velocity)
+        position, velocity, acceleration = road.get_vehicle()
+        next_road.push_vehicle(0, velocity, acceleration)
 
     # Generate new car if applicable
     if road.car_generator and not road.is_full():
