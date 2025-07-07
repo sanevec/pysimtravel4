@@ -18,7 +18,7 @@ def step_3_5_6(road: Road, next_road: Road) -> None:
     # Move car to next road if allowed
     if road.send_car and next_road is not None:
         position, velocity, acceleration = road.get_vehicle()
-        next_road.push_vehicle(0, velocity, acceleration)
+        next_road.push_vehicle(0.0, velocity, acceleration)
 
     # Generate new car if applicable
     if road.car_generator and not road.is_full():
@@ -29,9 +29,9 @@ def step_3_5_6(road: Road, next_road: Road) -> None:
 
         if max_position > 5:
             random_position = random.randint(0, int(max_position))
-            road.push_vehicle(random_position, road.max_vel)
+            road.push_vehicle(float(random_position), road.max_vel, 0.0)
             print("Push generator")
 
     # Delete car if applicable
     if road.car_deletion and road.send_car and not road.is_empty():
-        position, velocity = road.get_vehicle()
+        position, velocity, acceleration = road.get_vehicle()

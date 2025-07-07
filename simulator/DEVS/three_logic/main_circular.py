@@ -25,11 +25,14 @@ road_1.push_vehicle(17,10,1)
 road_2 = Road(car_deletion = False)
 road_2.push_vehicle(10,10,1)
 
+
   
 print(road_generator)
 print(road_1)    
 print(road_2)
-NOF_iter = 20         
+NOF_iter = 20       
+
+# road_1.min_time_to_complete()
 
 
 for i in range(NOF_iter):

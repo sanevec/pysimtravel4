@@ -19,9 +19,10 @@ def step_3(road: Road, before_road: Road) -> None:
         before_road.next_road_global_t = road.global_t
 
         try:
-            position, _ = road.consult_last_vehicle()
+            position, _, _ = road.consult_last_vehicle()
         except Exception:
             position = road.road_length
+
 
         before_road.next_road_vehicle_position = position
         before_road.next_road_nof_vehicles = (

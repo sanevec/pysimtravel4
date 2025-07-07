@@ -53,9 +53,7 @@ class Road:
 
         # Dynamic road parameters
         self.state = RoadState.So
-        self.position_vehicles = [-1] * self.max_occupancy
-        self.vel_vehicles = [max_vel] * self.max_occupancy
-        self.acceleration_vehicles = [0] * self.max_occupancy
+        self.vehicles = [(-1.0, self.max_vel, 0.0)] * self.max_occupancy
         self.head_queue = 0
         self.tail_queue = -1
         self.move_min_time = self.min_time
@@ -87,7 +85,7 @@ class Road:
             bool: True if the road is full, False otherwise.
         """
         try:
-            position, _ = self.consult_last_vehicle()
+            position, _, _ = self.consult_last_vehicle()
         except Exception:
             position = None
 
@@ -107,7 +105,7 @@ class Road:
         Args:
             position (float): Position of the vehicle.
             velocity (float): Velocity of the vehicle.
-            acceleration (float): acceleration of the vehicle
+            acceleration (float): Acceleration of the vehicle.
 
         Raises:
             Exception: If the road queue is full.
@@ -118,16 +116,14 @@ class Road:
         if self.tail_queue == -1:
             self.tail_queue = 0
 
-        self.position_vehicles[self.tail_queue] = position
-        self.vel_vehicles[self.tail_queue] = velocity
-        self.acceleration_vehicles[self.tail_queue] = acceleration
+        self.vehicles[self.tail_queue] = (position, velocity, acceleration)
         self.tail_queue = (self.tail_queue + 1) % self.max_occupancy
 
     def get_vehicle(self) -> tuple[float, float, float]:
         """Retrieves and removes the vehicle at the head of the queue.
 
         Returns:
-            tuple[float, float]: Position and velocity of the vehicle.
+            tuple[float, float, float]: Position, velocity and acceleration.
 
         Raises:
             Exception: If the queue is empty.
@@ -135,22 +131,16 @@ class Road:
         if self.is_empty():
             raise Exception("Queue is empty")
 
-        vehicle = self.position_vehicles[self.head_queue]
-        velocity = self.vel_vehicles[self.head_queue]
-        acceleration = self.acceleration_vehicles[self.head_queue]
-
-        self.position_vehicles[self.head_queue] = -1
-        self.vel_vehicles[self.head_queue] = self.max_vel
-        self.acceleration_vehicles[self.head_queue] = self.max_vel
-
+        vehicle = self.vehicles[self.head_queue]
+        self.vehicles[self.head_queue] = (-1.0, self.max_vel, 0.0)
         self.head_queue = (self.head_queue + 1) % self.max_occupancy
-        return vehicle, velocity, acceleration
+        return vehicle
 
-    def get_active_queue_data(self) -> list[tuple[float, float,float,  int]]:
+    def get_active_queue_data(self) -> list[tuple[float, float, float, int]]:
         """Retrieves all active vehicles from the circular queue in order.
 
         Returns:
-            list[tuple[float, float, int]]: A list of (position, velocity, index).
+            list[tuple[float, float, float, int]]: A list of (position, velocity, acceleration, index).
         """
         active_data = []
         if self.tail_queue == -1:
@@ -158,10 +148,8 @@ class Road:
 
         index = self.head_queue
         while index != self.tail_queue:
-            vehicle = self.position_vehicles[index]
-            velocity = self.vel_vehicles[index]
-            acceleration = self.acceleration_vehicles[index]
-            active_data.append((vehicle, velocity,acceleration, index))
+            position, velocity, acceleration = self.vehicles[index]
+            active_data.append((position, velocity, acceleration, index))
             index = (index + 1) % self.max_occupancy
 
         return active_data
@@ -170,7 +158,7 @@ class Road:
         """Consults the vehicle at the head of the queue.
 
         Returns:
-            tuple[float, float, float]: Position, velocity and acceleration of the vehicle.
+            tuple[float, float, float]: Position, velocity and acceleration.
 
         Raises:
             Exception: If the queue is empty.
@@ -178,23 +166,17 @@ class Road:
         if self.is_empty():
             raise Exception("Queue is empty")
 
-        vehicle = self.position_vehicles[self.head_queue]
-        velocity = self.vel_vehicles[self.head_queue]
-        acceleration = self.acceleration_vehicles[self.head_queue]
-        return vehicle, velocity, acceleration
+        return self.vehicles[self.head_queue]
 
     def consult_last_vehicle(self) -> tuple[float | None, float | None, float | None]:
         """Retrieves the last inserted vehicle in the queue.
 
         Returns:
-            tuple[float | None, float | None]: Position and velocity or (None, None).
+            tuple[float | None, float | None, float | None]: Position, velocity, acceleration.
         """
         try:
             last_index = (self.tail_queue - 1 + self.max_occupancy) % self.max_occupancy
-            vehicle = self.position_vehicles[last_index]
-            velocity = self.vel_vehicles[last_index]
-            acceleration = self.acceleration_vehicles[self.head_queue]
-            return vehicle, velocity, acceleration
+            return self.vehicles[last_index]
         except Exception:
             return None, None, None
 
@@ -210,10 +192,7 @@ class Road:
             self.state = RoadState.Ssend
 
     def move_vehicles(self) -> None:
-        """Updates positions of all vehicles based on elapsed time and velocity.
-
-        Vehicles are prevented from overlapping or exceeding road length.
-        """
+        """Updates positions of all vehicles based on elapsed time and velocity."""
         time_to_move = self.global_t - self.prev_global_t
 
         if time_to_move <= 0 or self.tail_queue == -1:
@@ -223,19 +202,16 @@ class Road:
         vehicle_idx = 0
 
         while index != self.tail_queue:
-            position = self.position_vehicles[index]
-            velocity = self.vel_vehicles[index]
+            position, velocity, acceleration = self.vehicles[index]
 
             if position is not None and velocity is not None:
                 adv_space = round(time_to_move * velocity, 2)
                 position += adv_space
-
                 max_position = self.road_length - self.car_length * vehicle_idx
                 if position > max_position:
                     position = max_position
 
-                self.position_vehicles[index] = position
-                self.vel_vehicles[index] = velocity
+                self.vehicles[index] = (position, velocity, acceleration)
 
             index = (index + 1) % self.max_occupancy
             vehicle_idx += 1
@@ -246,29 +222,38 @@ class Road:
         Returns:
             str: String with road ID, time, positions, state, and queue info.
         """
+        positions = [f"{p:.2f}" if p != -1 else "-1" for p, _, _ in self.vehicles]
         return (
             f"ID: {self.road_id},t {self.global_t}, Pos vehicles: "
-            f"{str(self.position_vehicles)}  State: {self.state.name},  "
+            f"{positions}  State: {self.state.name},  "
             f"tj: {self.traffic_jam}, head-tail: {self.head_queue}-{self.tail_queue}"
         )
 
     def min_time_to_complete(self) -> None:
         """Computes and updates the estimated max_global_t to complete the road."""
-        ext_veh_pos = [self.road_length + self.car_length]
-        ext_veh_vel = [0]
+        ext_veh_pos = [self.road_length + self.car_length, ]
+        ext_veh_vel = [0, ]
 
         if self.tail_queue != -1:
             index = self.head_queue
             while index != self.tail_queue:
-                ext_veh_pos.append(self.position_vehicles[index])
-                ext_veh_vel.append(self.vel_vehicles[index])
+                position, velocity, _ = self.vehicles[index]
+                ext_veh_pos.append(position)
+                ext_veh_vel.append(velocity)
                 index = (index + 1) % self.max_occupancy
 
         nof_vehicles = (
             (self.tail_queue - self.head_queue + self.max_occupancy)
             % self.max_occupancy
         )
-        time_to_complete = [self.road_length / self.max_vel] * nof_vehicles
+        # print(f"car {self.road_id}: {nof_vehicles}")
+        # print(f"ext_veh_pos: {ext_veh_pos}")
+        # print(f"ext_veh_vel: {ext_veh_vel}")
+        # print(list(range(nof_vehicles)))
+
+
+        time_to_complete = [self.road_length / self.max_vel] * (nof_vehicles+1)
+    
 
         for i in range(nof_vehicles):
             try:
@@ -276,11 +261,12 @@ class Road:
                 if vel_diff > 0:
                     gap = ext_veh_pos[i] - ext_veh_pos[i + 1] - self.car_length
                     time_to_complete[i + 1] = gap / vel_diff
+                   
             except IndexError:
-                time_to_complete.append(gap / vel_diff)
                 continue
             except ZeroDivisionError:
                 continue
+        
 
         if time_to_complete:
             if self.traffic_jam:
