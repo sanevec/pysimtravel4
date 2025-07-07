@@ -79,8 +79,7 @@ for i in range(NOF_iter):
     DEVS_2.step_5_6(road_1) 
     DEVS_2.step_5_6(road_2)
     
-    # print(road_generator)
-    # print(road_1)   
+    # print(road_generator)  
     # print(road_2)
 
 
@@ -91,7 +90,7 @@ for i in range(NOF_iter):
     DEVS_3.step_3_5_6(road_2, road_generator)
     
     print(road_generator)
-    print(road_1)   
+    print(road_1)    
     print(road_2)
 
 

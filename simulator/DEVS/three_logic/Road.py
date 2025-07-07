@@ -229,10 +229,11 @@ class Road:
             f"tj: {self.traffic_jam}, head-tail: {self.head_queue}-{self.tail_queue}"
         )
 
-    def min_time_to_complete(self) -> None:
+    def min_time_to_complete_simple(self) -> None:
         """Computes and updates the estimated max_global_t to complete the road."""
         ext_veh_pos = [self.road_length + self.car_length, ]
         ext_veh_vel = [0, ]
+        
 
         if self.tail_queue != -1:
             index = self.head_queue
@@ -246,10 +247,6 @@ class Road:
             (self.tail_queue - self.head_queue + self.max_occupancy)
             % self.max_occupancy
         )
-        # print(f"car {self.road_id}: {nof_vehicles}")
-        # print(f"ext_veh_pos: {ext_veh_pos}")
-        # print(f"ext_veh_vel: {ext_veh_vel}")
-        # print(list(range(nof_vehicles)))
 
 
         time_to_complete = [self.road_length / self.max_vel] * (nof_vehicles+1)
@@ -277,3 +274,58 @@ class Road:
             min_time = self.min_time
 
         self.max_global_t = round(self.global_t + min_time, 2)
+
+    def min_time_to_complete(self) -> None:
+
+        ext_veh_pos = [self.road_length + self.car_length, ]
+        ext_veh_vel = [0, ]
+        ext_veh_acc = [0, ]
+
+        if self.tail_queue != -1:
+            index = self.head_queue
+            while index != self.tail_queue:
+                position, velocity, acceleration = self.vehicles[index]
+                ext_veh_pos.append(position)
+                ext_veh_vel.append(velocity)
+                ext_veh_acc.append(acceleration)
+                index = (index + 1) % self.max_occupancy
+
+        nof_vehicles = (
+            (self.tail_queue - self.head_queue + self.max_occupancy)
+            % self.max_occupancy
+        )
+        time_to_complete = [self.road_length / self.max_vel] * (nof_vehicles+1)
+
+        # Calculation of time of each 
+        # Lower index are first in the road
+        for i in range(nof_vehicles):
+            a = 0.5 * (ext_veh_acc[i+1] - ext_veh_acc[i])
+            b = ext_veh_vel[i+1] - ext_veh_vel[i]
+            c = ext_veh_pos[i+1] - ext_veh_pos[i ] + self.car_length
+
+            disc = b**2 - 4*a*c
+            var_t = (-b + math.sqrt(disc))/2*a
+
+            time_to_complete[i+1] = var_t
+
+        if time_to_complete:
+            if self.traffic_jam:
+                min_time = min(e for e in time_to_complete if e > 0)
+            else:
+                min_time = min(time_to_complete)
+        else:
+            min_time = self.min_time
+
+        self.max_global_t = round(self.global_t + min_time, 2)
+
+
+
+
+
+
+   
+
+
+
+    
+
